@@ -10,15 +10,16 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(email: string, password: string) {
+  async register(email: string, password: string, role?: string) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Use Prisma instead of Mongoose
+    const userRole = role === 'ADMIN' ? 'ADMIN' : 'USER';
+
     const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword },
+      data: { email, password: hashedPassword, role: userRole },
     });
 
-    return { message: 'User registered successfully' };
+    return { message: 'User registered successfully', user };
   }
 
   async login(email: string, password: string) {
@@ -28,7 +29,11 @@ export class AuthService {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) throw new UnauthorizedException('Invalid credentials');
 
-    const token = this.jwtService.sign({ id: user.id, role: user.role });
+    const token = this.jwtService.sign({
+      id: user.id,
+      role: user.role,
+    });
+
     return { token };
   }
 }
