@@ -5,13 +5,23 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ArticlesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(category?: string, page: number = 1, limit: number = 10) {
+  async findAll(category?: string, page: number = 1, limit: number = 6) {
+    const totalArticles = await this.prisma.article.count({
+      where: category ? { category } : {},
+    });
+
+    const totalPages = Math.ceil(totalArticles / limit);
+
     const articles = await this.prisma.article.findMany({
       where: category ? { category } : {},
       take: limit,
       skip: (page - 1) * limit,
     });
-    return articles;
+
+    return {
+      articles,
+      totalPages,
+    };
   }
 
   async findOne(id: string) {
