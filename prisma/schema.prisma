@@ -41,9 +41,19 @@ model User {
   password String
   role     Role      @default(USER)
   comments Comment[]
+  chats    Chat[]
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  userId    String
+  messages  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
